@@ -10,6 +10,7 @@ export default class Game extends Component {
     loading: true,
     score: 0,
     questionNumber: 0,
+    done: false,
   };
 
   async componentDidMount() {
@@ -29,6 +30,10 @@ export default class Game extends Component {
   }
 
   changeQuestion = (bonus = 0) => {
+    if (this.state.questions.length === 0) {
+      return this.setState({ done: true });
+    }
+
     const randomQuestionIndex = Math.floor(
       Math.random() * this.state.questions.length
     );
@@ -47,17 +52,20 @@ export default class Game extends Component {
   render() {
     return (
       <>
-        {this.state.loading && <div id="loader"></div>}
-        <HUD
-          score={this.state.score}
-          questionNumber={this.state.questionNumber}
-        />
-        {!this.state.loading && this.state.currentQuestion && (
-          <Question
-            question={this.state.currentQuestion}
-            changeQuestion={this.changeQuestion}
-          />
+        {this.state.loading && !this.state.done && <div id="loader"></div>}
+        {!this.state.loading && !this.state.done && this.state.currentQuestion && (
+          <>
+            <HUD
+              score={this.state.score}
+              questionNumber={this.state.questionNumber}
+            />
+            <Question
+              question={this.state.currentQuestion}
+              changeQuestion={this.changeQuestion}
+            />
+          </>
         )}
+        {this.state.done && <h1>DONE!!</h1>}
       </>
     );
   }
