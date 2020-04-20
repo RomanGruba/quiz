@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Question from "./Question";
 import { loadQuestions } from "../helpers/QuestionsHelper";
 import HUD from "./HUD";
+import SaveScoreForm from "./SaveScoreForm";
 
 export default class Game extends Component {
   state = {
@@ -31,7 +32,10 @@ export default class Game extends Component {
 
   changeQuestion = (bonus = 0) => {
     if (this.state.questions.length === 0) {
-      return this.setState({ done: true });
+      return this.setState((prevState) => ({
+        done: true,
+        score: prevState.score + bonus,
+      }));
     }
 
     const randomQuestionIndex = Math.floor(
@@ -65,7 +69,7 @@ export default class Game extends Component {
             />
           </>
         )}
-        {this.state.done && <h1>DONE!!</h1>}
+        {this.state.done && <SaveScoreForm score={this.state.score} />}
       </>
     );
   }
