@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useFirebase } from "./Firebase/FirebaseContext";
 
 export default function SaveScoreForm({ score }) {
   const [userName, setUserName] = useState("");
+  const firebase = useFirebase();
 
   const onUserNameChange = (e) => {
     setUserName(e.target.value);
@@ -14,6 +16,9 @@ export default function SaveScoreForm({ score }) {
       name: userName,
       score,
     };
+    firebase.scores().push(record, () => {
+      console.log("Score saved!");
+    });
   };
 
   return (

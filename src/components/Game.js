@@ -53,23 +53,31 @@ export default class Game extends Component {
     }));
   };
 
+  scoreSaved = () => {
+    this.props.history.push("/");
+  };
+
   render() {
+    const {
+      loading,
+      done,
+      score,
+      currentQuestion,
+      questionNumber,
+    } = this.state;
     return (
       <>
-        {this.state.loading && !this.state.done && <div id="loader"></div>}
-        {!this.state.loading && !this.state.done && this.state.currentQuestion && (
+        {loading && !done && <div id="loader"></div>}
+        {!loading && !done && currentQuestion && (
           <>
-            <HUD
-              score={this.state.score}
-              questionNumber={this.state.questionNumber}
-            />
+            <HUD score={score} questionNumber={questionNumber} />
             <Question
-              question={this.state.currentQuestion}
+              question={currentQuestion}
               changeQuestion={this.changeQuestion}
             />
           </>
         )}
-        {this.state.done && <SaveScoreForm score={this.state.score} />}
+        {done && <SaveScoreForm score={score} />}
       </>
     );
   }
