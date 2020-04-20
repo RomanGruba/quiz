@@ -77,7 +77,7 @@ export default class Game extends Component {
             />
           </>
         )}
-        {done && <SaveScoreForm score={score} />}
+        {done && <SaveScoreForm score={score} scoreSaved={this.scoreSaved} />}
       </>
     );
   }
