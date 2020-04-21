@@ -1,84 +1,107 @@
-import React, { Component } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Question from "./Question";
 import { loadQuestions } from "../helpers/QuestionsHelper";
 import HUD from "./HUD";
 import SaveScoreForm from "./SaveScoreForm";
 
-export default class Game extends Component {
-  state = {
-    questions: null,
-    currentQuestion: null,
-    loading: true,
-    score: 0,
-    questionNumber: 0,
-    done: false,
-  };
+export default function Game({ history }) {
+  const [questions, setQuestions] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [score, setScore] = useState(0);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [done, setDone] = useState(false);
 
-  async componentDidMount() {
-    try {
-      const questions = await loadQuestions();
-      this.setState(
-        {
-          questions,
-        },
-        () => {
-          this.changeQuestion();
-        }
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  useEffect(() => {
+    loadQuestions().then(setQuestions).catch(console.error);
+  }, []);
 
-  changeQuestion = (bonus = 0) => {
-    if (this.state.questions.length === 0) {
-      return this.setState((prevState) => ({
-        done: true,
-        score: prevState.score + bonus,
-      }));
-    }
+  // state = {
+  //   questions: null,
+  //   currentQuestion: null,
+  //   loading: true,
+  //   score: 0,
+  //   questionNumber: 0,
+  //   done: false,
+  // };
 
-    const randomQuestionIndex = Math.floor(
-      Math.random() * this.state.questions.length
-    );
-    const currentQuestion = this.state.questions[randomQuestionIndex];
-    const remainingQuestions = [...this.state.questions];
-    remainingQuestions.splice(currentQuestion, 1);
-    this.setState((prevState) => ({
-      questions: remainingQuestions,
-      currentQuestion,
-      loading: false,
-      score: prevState.score + bonus,
-      questionNumber: prevState.questionNumber + 1,
-    }));
-  };
+  // async componentDidMount() {
+  //   try {
+  //     const questions = await loadQuestions();
+  //     this.setState(
+  //       {
+  //         questions,
+  //       },
+  //       () => {
+  //         this.changeQuestion();
+  //       }
+  //     );
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 
-  scoreSaved = () => {
-    this.props.history.push("/");
-  };
+  const changeQuestion = useCallback(
+    (bonus = 0) => {
+      if (questions.length === 0) {
+        setDone(true);
+        setScore(score + bonus);
+        return;
+      }
 
-  render() {
-    const {
-      loading,
-      done,
+      const randomQuestionIndex = Math.floor(Math.random() * questions.length);
+      const currentQuestion = questions[randomQuestionIndex];
+      const remainingQuestions = [...questions];
+      remainingQuestions.splice(currentQuestion, 1);
+
+      setQuestions(remainingQuestions);
+      setCurrentQuestion(currentQuestion);
+      setLoading(false);
+      setScore(score + bonus);
+      setQuestionNumber(questionNumber + 1);
+
+      // this.setState((prevState) => ({
+      //   questions: remainingQuestions,
+      //   currentQuestion,
+      //   loading: false,
+      //   score: prevState.score + bonus,
+      //   questionNumber: prevState.questionNumber + 1,
+      // }));
+    },
+    [
       score,
-      currentQuestion,
       questionNumber,
-    } = this.state;
-    return (
-      <>
-        {loading && !done && <div id="loader"></div>}
-        {!loading && !done && currentQuestion && (
-          <>
-            <HUD score={score} questionNumber={questionNumber} />
-            <Question
-              question={currentQuestion}
-              changeQuestion={this.changeQuestion}
-            />
-          </>
-        )}
-        {done && <SaveScoreForm score={score} scoreSaved={this.scoreSaved} />}
-      </>
-    );
-  }
+      questions,
+      setQuestions,
+      setLoading,
+      setCurrentQuestion,
+      setQuestionNumber,
+    ]
+  );
+
+  useEffect(() => {
+    if (!currentQuestion && questions && questions.length) {
+      changeQuestion();
+    }
+  }, [changeQuestion, currentQuestion, questions]);
+
+  const scoreSaved = () => {
+    history.push("/");
+  };
+
+  return (
+    <>
+      {loading && !done && <div id="loader"></div>}
+      {!loading && !done && currentQuestion && (
+        <>
+          <HUD score={score} questionNumber={questionNumber} />
+          <Question
+            question={currentQuestion}
+            changeQuestion={changeQuestion}
+          />
+        </>
+      )}
+      {done && <SaveScoreForm score={score} scoreSaved={scoreSaved} />}
+    </>
+  );
 }
